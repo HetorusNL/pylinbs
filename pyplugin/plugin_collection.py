@@ -1,47 +1,58 @@
 import inspect
 import os
 import pkgutil
+import importlib
 
 from pyplugin.plugin import Plugin
 
 
 class PluginCollection(object):
-    """Upon creation, this class will read the plugins package for modules
-    that contain a class definition that is inheriting from the Plugin class
-    """
+    """Plugin Collection that collects the plugins in plugin_package that
+    inherit the Plugin class"""
 
     def __init__(self, plugin_package):
-        """Constructor that initiates the reading of all available plugins
-        when an instance of the PluginCollection object is created
-        """
-        self.plugin_package = f"pyplugin.{plugin_package}"
+        """Creates the plugin collection and initiates the reading of all
+        available plugins"""
+        self.plugin_package = plugin_package
         self.reload_plugins()
 
     def reload_plugins(self):
-        """Reset the list of all plugins and initiate the walk over the main
-        provided plugin package to load all available plugins
-        """
+        """(Re)reads all available plugins in the plugin_package package"""
         self.plugins = []
         self.seen_paths = []
-        print()
-        print(f"Looking for plugins under package {self.plugin_package}")
-        self.walk_package(self.plugin_package)
 
-    def apply_all_plugins_on_value(self, argument):
-        """Apply all of the plugins on the argument supplied to this function
-        """
-        print()
-        print(f"Applying all plugins on value {argument}:")
+        print(f'Looking for plugins under package "{self.plugin_package}":')
+        self._walk_package(self.plugin_package)
+        print()  # add a newline after all plugins have been found
+
+    def initialize(self):
+        """Call the initialize function on all plugins, this initializes the
+        plugin classes"""
+        print("initializing plugins")
+
         for plugin in self.plugins:
-            print(
-                f"    Applying {plugin.description} on value {argument}\
-                 yields value {plugin.perform_operation(argument)}"
-            )
+            plugin.initialize()
 
-    def walk_package(self, package):
-        """Recursively walk the supplied package to retrieve all plugins
-        """
-        imported_package = __import__(package, fromlist=["blah"])
+    def configure(self):
+        """Call the configure function on all plugins, this performs the (user)
+        configuration of the plugin classes"""
+        print("configuring plugins")
+
+        for plugin in self.plugins:
+            plugin.configure()
+
+    def execute(self):
+        """Call the execute function on all plugins, this executes the plugin's
+        desired action that has been configured"""
+        print("executing plugins")
+
+        for plugin in self.plugins:
+            plugin.execute()
+
+    def _walk_package(self, package):
+        """Recursively walk the supplied package to import all packages"""
+        imported_package = importlib.import_module(package)
+        # imported_package = __import__(package, fromlist=["blah"])
 
         for _, pluginname, ispkg in pkgutil.iter_modules(
             imported_package.__path__, imported_package.__name__ + "."
@@ -78,7 +89,7 @@ class PluginCollection(object):
                     if os.path.isdir(os.path.join(pkg_path, p))
                 ]
 
-                # For each sub directory, apply the walk_package method
+                # For each sub directory, apply the _walk_package method
                 # recursively
                 for child_pkg in child_pkgs:
-                    self.walk_package(package + "." + child_pkg)
+                    self._walk_package(package + "." + child_pkg)

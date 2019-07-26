@@ -7,7 +7,8 @@ class Plugin(object, metaclass=ABCMeta):
     """
 
     def __init__(self):
-        self.description = "Base Plugin"
+        self.name = "Base Plugin Class"
+        self.description = "Base plugin: should be inherited by other plugins"
         self.version = 1.0
         self.config = {}
 
