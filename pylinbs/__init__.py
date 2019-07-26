@@ -1,3 +1,3 @@
-from pylinbs import PyLinBS
+from .pylinbs import PyLinBS
 
 __all__ = ["PyLinBS"]
