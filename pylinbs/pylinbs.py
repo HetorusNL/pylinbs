@@ -1,6 +1,7 @@
-from PyInquirer import prompt
+from InquirerPy.resolver import prompt
 
 from pyplugin import PluginCollection
+from pyplugin.plugin import Plugin
 
 
 class PyLinBS(object):
@@ -10,6 +11,7 @@ class PyLinBS(object):
     def __init__(self):
         """Initializes PyLinBS by searching for available plugins"""
         self.plugin_collection = PluginCollection("plugins")
+        self.selected_plugins: list[Plugin] = []
 
     def select_plugins(self):
         choices = [
@@ -22,7 +24,7 @@ class PyLinBS(object):
             "message": "Which plugins to you want to run?",
             "choices": choices,
         }
-        self.selected_plugins = prompt([question]).get("plugins")
+        self.selected_plugins = prompt([question]).get("plugins")  # type: ignore
         print()  # add a newline after the plugin selector
 
     def initialize_plugins(self):
